@@ -3,7 +3,7 @@ import mediapipe as mp
 import math
 
 mp_hands = mp.solutions.hands
-hands = mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.7)
+hands = mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.1)
 mp_draw = mp.solutions.drawing_utils
 
 def distance(point1, point2):
@@ -42,7 +42,7 @@ def classify_gesture(landmarks):
 
     # return fingers
 
-    if fingers == [False, False, False, False, False]:
+    if fingers[1:] == [ False, False, False, False]:
         return "rock"
     elif fingers[1] and fingers[2] and not fingers[3] and not fingers[4]:
         return "scissors"

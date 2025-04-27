@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import Webcam from "react-webcam";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
+import GameArea from "@/components/play/GameArea";
+import ScoreBoard from "@/components/play/ScoreBoard";
 
 const phrases = ["Rock", "Paper", "Scissors!", "Shoot!"];
+const choices = ["rock", "paper", "scissors"];
 
 export default function PlayPage() {
   const webcamRef = useRef<Webcam>(null);
@@ -19,9 +21,10 @@ export default function PlayPage() {
   const [gameStarted, setGameStarted] = useState(false);
   const [countdownText, setCountdownText] = useState("");
   const [showFinal, setShowFinal] = useState(false);
-  const [temp,setTemp] = useState<string>("");
+  const [temp, setTemp] = useState<string>();
+  const [animateHand, setAnimateHand] = useState(false);
+  const [opponent, setOpponent] = useState<string>("rock");
 
-  // Load initial values
   useEffect(() => {
     const name = localStorage.getItem("playerName") ?? "";
     const hand = localStorage.getItem("handPreference") as "left" | "right";
@@ -32,27 +35,34 @@ export default function PlayPage() {
     setTotalRounds(rounds);
   }, []);
 
-  // Countdown logic
-  const runCountdownAndCapture = async () => {
+  const runCountdownAndCapture = async (round: number) => {
+    await new Promise((r) => setTimeout(r, 10));
+    setAnimateHand(true);
+
     for (let i = 0; i < phrases.length; i++) {
       setCountdownText(phrases[i]);
-      await new Promise((r) => setTimeout(r, 600));
+      console.log(animateHand);
+      
+      await new Promise((r) => setTimeout(r, 500));
     }
+
     setCountdownText("");
 
-    await captureAndEvaluate();
+    await captureAndEvaluate(round);
   };
 
-  // Send image to backend
-  const captureAndEvaluate = async () => {
+  const captureAndEvaluate = async (round: number) => {
     const imageSrc = webcamRef.current?.getScreenshot();
-    
     if (!imageSrc) return;
-
     setTemp(imageSrc);
 
+    const randomOpponent = choices[Math.floor(Math.random() * 3)];
+    setOpponent(randomOpponent);
+    setAnimateHand(false);
+
     try {
-      const response = await fetch("http://localhost:5000/predict", {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const response = await fetch(`${apiUrl}/predict`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image: imageSrc, hand: handPreference }),
@@ -61,9 +71,7 @@ export default function PlayPage() {
       const data = await response.json();
       setResult(data.prediction);
 
-      // Random opponent
-      const choices = ["rock", "paper", "scissors"];
-      const opponent = choices[Math.floor(Math.random() * 3)];
+      
 
       if (data.prediction === opponent) {
         setScore((s) => ({ ...s, draws: s.draws + 1 }));
@@ -77,23 +85,25 @@ export default function PlayPage() {
         setScore((s) => ({ ...s, losses: s.losses + 1 }));
       }
 
+      if (round < totalRounds) {
+        setTimeout(() => {
+          setCurrentRound((prev) => prev + 1);
+          runCountdownAndCapture(round + 1);
+        }, 1500);
+      } else {
+        setShowFinal(true);
+      }
     } catch (error) {
       console.error("Error sending image:", error);
-    }
-
-    if (currentRound < totalRounds) {
-      setTimeout(() => {
-        setCurrentRound((r) => r + 1);
-        runCountdownAndCapture();
-      }, 1000);
-    } else {
-      setShowFinal(true);
     }
   };
 
   const handleStartGame = () => {
     setGameStarted(true);
-    runCountdownAndCapture();
+    setCurrentRound(1);
+    setScore({ wins: 0, losses: 0, draws: 0 });
+    setShowFinal(false);
+    runCountdownAndCapture(1);
   };
 
   return (
@@ -103,42 +113,28 @@ export default function PlayPage() {
         Playing {totalRounds} round{totalRounds > 1 ? "s" : ""} — Good luck!
       </p>
 
-      <Card>
-        <CardContent className="p-4 flex flex-col items-center space-y-4">
-          <Webcam
-            ref={webcamRef}
-            screenshotFormat="image/jpeg"
-            className="rounded-md max-w-sm"
-            videoConstraints={{ facingMode: "user" }}
-          />
-
-          {gameStarted ? (
-            <>
-              {countdownText && <div className="text-2xl font-semibold">{countdownText}</div>}
-              {result && (
-                <div className="text-xl font-medium">
-                  Round {currentRound} Result:{" "}
-                  <span className="text-primary font-bold">{result}</span>
-                </div>
-              )}
-            </>
-          ) : (
-            <Button onClick={handleStartGame}>Ready</Button>
-          )}
-
-          {showFinal && (
-            <div className="pt-4 space-y-2 text-center">
-              <h2 className="text-2xl font-bold">🎉 Final Score</h2>
-              <p>Wins: {score.wins}</p>
-              <p>Losses: {score.losses}</p>
-              <p>Draws: {score.draws}</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <div className="w-full max-w-4xl">
+        
+        <GameArea
+          webcamRef={webcamRef}
+          handPreference={handPreference}
+          animateHand={animateHand}
+          opponent={opponent}
+        />
+        <ScoreBoard
+          gameStarted={gameStarted}
+          countdownText={countdownText}
+          result={result}
+          opponent={opponent}
+          currentRound={currentRound}
+          score={score}
+          showFinal={showFinal}
+          onStartGame={handleStartGame}
+        />
+      </div>
 
       <div id="temp">
-          <Image src={temp} alt="dd" width={200} height={200}/>
+        {temp && <Image src={temp} alt="temp" width={200} height={200} />}
       </div>
     </div>
   );
