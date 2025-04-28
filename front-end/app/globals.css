@@ -44,6 +44,7 @@
 
   --color-dark-1 : #3aff2a;
   --animate-swing : swing 0.6s ease-out 4 ;
+  
 }
 
 @keyframes swing {

@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -11,20 +11,37 @@ import { cn } from "@/lib/utils";
 export default function SetupPage() {
   const router = useRouter();
   const [name, setName] = useState("");
-  const [hand, setHand] = useState<string>("right");
+  const [hand, setHand] = useState<"left" | "right">("right");
   const [rounds, setRounds] = useState(3);
 
-
-  const handleStart = () => {
+  const handleStart = async () => {
     if (name.trim() === "") {
       alert("Please enter your name");
       return;
     }
-    localStorage.setItem("playerName", name);
-    localStorage.setItem("handPreference", hand);
-    localStorage.setItem("rounds", rounds.toString());
 
-    router.push("/play");
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+    try {
+      const response = await fetch(`${apiUrl}/setup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, handPreference: hand, rounds }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to setup player");
+      }
+
+      localStorage.setItem("playerName", name);
+      localStorage.setItem("handPreference", hand);
+      localStorage.setItem("rounds", rounds.toString());
+
+      router.push("/play");
+    } catch (error) {
+      console.error("Setup error:", error);
+      alert("Failed to setup player, please try again.");
+    }
   };
 
   return (
@@ -44,13 +61,16 @@ export default function SetupPage() {
 
         <div className="space-y-2">
           <Label>Hand Preference</Label>
-          <RadioGroup className="flex justify-around p-10" value={hand} onValueChange={(value) => {setHand(value as "left" | "right"); console.log(value);
-          }}>
-            <div className={cn("border-dark-1 border rounded px-4 py-4 cursor-pointer",hand === "left"&&"bg-primary text-white")}>
+          <RadioGroup
+            className="flex justify-around p-10"
+            value={hand}
+            onValueChange={(value) => setHand(value as "left" | "right")}
+          >
+            <div className={cn("border-dark-1 border rounded px-4 py-4 cursor-pointer", hand === "left" && "bg-primary text-white")}>
               <RadioGroupItem className="hidden" value="left" id="left" />
               <Label className="cursor-pointer" htmlFor="left">Left Handed</Label>
             </div>
-            <div className={cn("border-dark-1 border rounded px-4 py-4 cursor-pointer",hand === "right" && "bg-primary text-white")}>
+            <div className={cn("border-dark-1 border rounded px-4 py-4 cursor-pointer", hand === "right" && "bg-primary text-white")}>
               <RadioGroupItem className="hidden" value="right" id="right" />
               <Label className="cursor-pointer" htmlFor="right">Right Handed</Label>
             </div>
@@ -68,7 +88,7 @@ export default function SetupPage() {
           />
         </div>
 
-        <Button className="w-full cursor-pointer" onClick={handleStart}>
+        <Button className="w-full" onClick={handleStart}>
           Start Game
         </Button>
       </div>
