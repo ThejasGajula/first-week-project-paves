@@ -21,7 +21,7 @@ public class GameController {
         return gameService.getScore();
     }
 
-    @PostMapping("/predict")
+    @PostMapping("/submit")
     public PredictResult predict(@RequestBody ImageRequest request)
  {
         return gameService.predict(request.getImage(), request.getOpponentMove());
