@@ -4,7 +4,7 @@ import React from 'react'
 
 const handAnimatedCanvas = ({className} : {className:string}) => {
   return (
-    
+    <></>
   )
 }
 
