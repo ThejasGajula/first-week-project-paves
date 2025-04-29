@@ -23,7 +23,7 @@ export default function PlayPage() {
   const [showFinal, setShowFinal] = useState(false);
   const [temp, setTemp] = useState<string>();
   const [animateHand, setAnimateHand] = useState(false);
-  const [opponent, setOpponent] = useState<string>("rock");
+  const [opponent, setOpponent] = useState<"rock"|"paper"|"scissors">("rock");
 
   useEffect(() => {
     const name = localStorage.getItem("playerName") ?? "";
@@ -37,6 +37,7 @@ export default function PlayPage() {
 
   const runCountdownAndCapture = async () => {
     await new Promise((r) => setTimeout(r, 10));
+    setOpponent("rock")
     setAnimateHand(true);
 
     for (let i = 0; i < phrases.length; i++) {
@@ -53,7 +54,7 @@ export default function PlayPage() {
     if (!imageSrc) return;
     setTemp(imageSrc);
 
-    const randomOpponent = choices[Math.floor(Math.random() * choices.length)];
+    const randomOpponent = choices[Math.floor(Math.random() * choices.length)] as "rock" | "paper" |"scissors";
     setOpponent(randomOpponent);
     setAnimateHand(false);
 
@@ -73,11 +74,11 @@ export default function PlayPage() {
       setResult(data.result); // 'win', 'loss', or 'draw'
       setScore(data.score);   // updated { wins, losses, draws }
 
-      if (data.lastRound) {
+      if (data.roundNumber == totalRounds) {
         setShowFinal(true);
       } else {
         setTimeout(() => {
-          setCurrentRound((prev) => prev + 1);
+          setCurrentRound(data.roundNumber);
           runCountdownAndCapture();
         }, 1500);
       }
