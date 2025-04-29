@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import Webcam from "react-webcam";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import GameArea from "@/components/play/GameArea";
 import ScoreBoard from "@/components/play/ScoreBoard";
+import GameArea from "@/components/play/GameArea";
 
 const phrases = ["Rock", "Paper", "Scissors!", "Shoot!"];
 const choices = ["rock", "paper", "scissors"];
@@ -35,66 +35,56 @@ export default function PlayPage() {
     setTotalRounds(rounds);
   }, []);
 
-  const runCountdownAndCapture = async (round: number) => {
+  const runCountdownAndCapture = async () => {
     await new Promise((r) => setTimeout(r, 10));
     setAnimateHand(true);
 
     for (let i = 0; i < phrases.length; i++) {
       setCountdownText(phrases[i]);
-      console.log(animateHand);
-      
       await new Promise((r) => setTimeout(r, 500));
     }
 
     setCountdownText("");
-
-    await captureAndEvaluate(round);
+    await captureAndEvaluate();
   };
 
-  const captureAndEvaluate = async (round: number) => {
+  const captureAndEvaluate = async () => {
     const imageSrc = webcamRef.current?.getScreenshot();
     if (!imageSrc) return;
     setTemp(imageSrc);
 
-    const randomOpponent = choices[Math.floor(Math.random() * 3)];
+    const randomOpponent = choices[Math.floor(Math.random() * choices.length)];
     setOpponent(randomOpponent);
     setAnimateHand(false);
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
       const response = await fetch(`${apiUrl}/predict`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: imageSrc, hand: handPreference }),
+        body: JSON.stringify({ image: imageSrc, opponent: randomOpponent }),
       });
 
       const data = await response.json();
-      setResult(data.prediction);
+      setResult(data.result); // expects result to be 'win' | 'loss' | 'draw'
 
-      
+      // Fetch updated score
+      const scoreResponse = await fetch(`${apiUrl}/score`);
+      const scoreData = await scoreResponse.json();
+      setScore(scoreData);
 
-      if (data.prediction === opponent) {
-        setScore((s) => ({ ...s, draws: s.draws + 1 }));
-      } else if (
-        (data.prediction === "rock" && opponent === "scissors") ||
-        (data.prediction === "paper" && opponent === "rock") ||
-        (data.prediction === "scissors" && opponent === "paper")
-      ) {
-        setScore((s) => ({ ...s, wins: s.wins + 1 }));
-      } else {
-        setScore((s) => ({ ...s, losses: s.losses + 1 }));
-      }
-
-      if (round < totalRounds) {
+      // Advance round
+      if (currentRound < totalRounds) {
         setTimeout(() => {
           setCurrentRound((prev) => prev + 1);
-          runCountdownAndCapture(round + 1);
+          runCountdownAndCapture();
         }, 1500);
       } else {
         setShowFinal(true);
       }
     } catch (error) {
-      console.error("Error sending image:", error);
+      console.error("Error during prediction:", error);
     }
   };
 
@@ -103,18 +93,17 @@ export default function PlayPage() {
     setCurrentRound(1);
     setScore({ wins: 0, losses: 0, draws: 0 });
     setShowFinal(false);
-    runCountdownAndCapture(1);
+    runCountdownAndCapture();
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 space-y-4">
-      <h1 className="text-3xl font-bold">Welcome, {playerName} 👋</h1>
+      <h1 className="text-3xl font-bold">Rock paper scissors</h1>
       <p className="text-muted-foreground">
         Playing {totalRounds} round{totalRounds > 1 ? "s" : ""} — Good luck!
       </p>
 
       <div className="w-full max-w-4xl">
-        
         <GameArea
           webcamRef={webcamRef}
           handPreference={handPreference}
@@ -134,7 +123,7 @@ export default function PlayPage() {
       </div>
 
       <div id="temp">
-        {temp && <Image src={temp} alt="temp" width={200} height={200} />}
+        {temp && <Image src={temp} alt="Captured move" width={200} height={200} />}
       </div>
     </div>
   );

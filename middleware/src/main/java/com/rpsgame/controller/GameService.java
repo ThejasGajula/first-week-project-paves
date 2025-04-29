@@ -1,7 +1,6 @@
 package com.rpsgame.controller;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import lombok.Data;
 
@@ -27,7 +26,7 @@ public class GameService {
         return new ScoreResponse(wins, losses, draws);
     }
 
-    public PredictResult predict(MultipartFile image, String opponentMove) {
+    public PredictResult predict(String image, String opponentMove) {
         // Dummy logic: randomly pick a move (real: should analyze image)
         String playerMove = moves[new Random().nextInt(moves.length)];
 

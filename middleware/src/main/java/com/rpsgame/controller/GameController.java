@@ -2,7 +2,6 @@ package com.rpsgame.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api")
@@ -23,10 +22,14 @@ public class GameController {
     }
 
     @PostMapping("/predict")
-    public PredictResult predict(@RequestParam("image") MultipartFile image,
-                                  @RequestParam("opponentMove") String opponentMove) {
-        return gameService.predict(image, opponentMove);
+    public PredictResult predict(@RequestBody ImageRequest request)
+ {
+        return gameService.predict(request.getImage(), request.getOpponentMove());
     }
+
+
+
+    
         
 }
 
