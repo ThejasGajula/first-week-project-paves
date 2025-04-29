@@ -45,10 +45,10 @@ export default function PlayPage() {
     }
 
     setCountdownText("");
-    await captureAndEvaluate();
+    await captureAndSubmit();
   };
 
-  const captureAndEvaluate = async () => {
+  const captureAndSubmit = async () => {
     const imageSrc = webcamRef.current?.getScreenshot();
     if (!imageSrc) return;
     setTemp(imageSrc);
@@ -60,31 +60,29 @@ export default function PlayPage() {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-      const response = await fetch(`${apiUrl}/predict`, {
+      const response = await fetch(`${apiUrl}/round/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: imageSrc, opponentMove: randomOpponent }),
+        body: JSON.stringify({
+          image: imageSrc,
+          opponentMove: randomOpponent,
+        }),
       });
 
       const data = await response.json();
-      setResult(data.result); // expects result to be 'win' | 'loss' | 'draw'
+      setResult(data.result); // 'win', 'loss', or 'draw'
+      setScore(data.score);   // updated { wins, losses, draws }
 
-      // Fetch updated score
-      const scoreResponse = await fetch(`${apiUrl}/score`);
-      const scoreData = await scoreResponse.json();
-      setScore(scoreData);
-
-      // Advance round
-      if (currentRound < totalRounds) {
+      if (data.lastRound) {
+        setShowFinal(true);
+      } else {
         setTimeout(() => {
           setCurrentRound((prev) => prev + 1);
           runCountdownAndCapture();
         }, 1500);
-      } else {
-        setShowFinal(true);
       }
     } catch (error) {
-      console.error("Error during prediction:", error);
+      console.error("Error during round submission:", error);
     }
   };
 
