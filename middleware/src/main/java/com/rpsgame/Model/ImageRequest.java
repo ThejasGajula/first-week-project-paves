@@ -1,4 +1,4 @@
-package com.rpsgame.controller;
+package com.rpsgame.Model;
 
 import lombok.Data;
 

@@ -1,19 +1,17 @@
-package com.rpsgame.controller;
+package com.rpsgame.Model;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-
-
-
+@Data
+@NoArgsConstructor
 public class PlayerSetupRequest {
     
     private String name;
     private String handPreference; // left / right
     private Integer rounds;
 
-    public PlayerSetupRequest()
-    {
-
-    }
+   
 
     // Getters and Setters
     public String getName() { return name; }

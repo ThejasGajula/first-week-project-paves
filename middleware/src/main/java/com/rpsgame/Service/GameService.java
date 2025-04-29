@@ -1,6 +1,10 @@
-package com.rpsgame.controller;
+package com.rpsgame.Service;
 
 import org.springframework.stereotype.Service;
+
+import com.rpsgame.Model.PlayerSetupRequest;
+import com.rpsgame.Model.PredictResponse;
+import com.rpsgame.Model.ScoreResponse;
 
 import lombok.Data;
 
@@ -17,6 +21,7 @@ public class GameService {
 
     private final String[] moves = {"rock", "paper", "scissors"};
     private PlayerSetupRequest playerProfile;
+    private int currentRound;
 
     public void setupPlayer(PlayerSetupRequest setupRequest) {
         this.playerProfile = setupRequest;
@@ -26,11 +31,16 @@ public class GameService {
         return new ScoreResponse(wins, losses, draws);
     }
 
-    public PredictResult predict(String image, String opponentMove) {
+    public PredictResponse predict(String image, String opponentMove) {
+        
         // Dummy logic: randomly pick a move (real: should analyze image)
         String playerMove = moves[new Random().nextInt(moves.length)];
 
         String result = determineResult(playerMove, opponentMove.toLowerCase());
+
+        if (currentRound<this.playerProfile.getRounds()) {
+            currentRound++;
+        }
 
         // Update score
         switch (result) {
@@ -45,7 +55,9 @@ public class GameService {
                 break;
         }
 
-        return new PredictResult(playerMove, opponentMove, result);
+        
+        return new PredictResponse(playerMove, opponentMove, result ,getScore(),currentRound) {
+        };
     }
 
     private String determineResult(String playerMove, String opponentMove) {
