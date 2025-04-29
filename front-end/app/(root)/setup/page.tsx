@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 
 export default function SetupPage() {
   const router = useRouter();
-  const [name, setName] = useState("");
+  const [name, setName] = useState("Rohit");
   const [hand, setHand] = useState<"left" | "right">("right");
   const [rounds, setRounds] = useState(3);
 
@@ -26,7 +26,7 @@ export default function SetupPage() {
       const response = await fetch(`${apiUrl}/setup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, handPreference: hand, rounds }),
+        body: JSON.stringify({ name, handPreference: hand, rounds })
       });
 
       if (!response.ok) {

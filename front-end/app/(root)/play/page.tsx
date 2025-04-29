@@ -63,7 +63,7 @@ export default function PlayPage() {
       const response = await fetch(`${apiUrl}/predict`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: imageSrc, opponent: randomOpponent }),
+        body: JSON.stringify({ image: imageSrc, opponentMove: randomOpponent }),
       });
 
       const data = await response.json();
