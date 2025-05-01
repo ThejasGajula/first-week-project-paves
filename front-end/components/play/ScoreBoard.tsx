@@ -38,7 +38,7 @@ export default function ScoreBoard({
           )}
         </>
       ) : (
-        <Button onClick={onStartGame}>Ready</Button>
+        <Button onClick={onStartGame} className="z-100">Ready</Button>
       )}
 
       {showFinal && (

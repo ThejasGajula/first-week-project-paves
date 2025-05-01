@@ -22,7 +22,7 @@ const choices = {
 export default function GameArea({ webcamRef, handPreference, animateHand, opponentMove }: GameAreaProps) {
   return (
     <div className={cn("flex gap-10", handPreference === "right" && "flex-row-reverse")}>
-      <Card className="w-1/2">
+      <Card className="w-1/2 glassMorph z-10">
         <CardContent className="p-2 flex flex-col items-center space-y-4">
           <Webcam
             ref={webcamRef}
@@ -34,7 +34,7 @@ export default function GameArea({ webcamRef, handPreference, animateHand, oppon
         </CardContent>
       </Card>
 
-      <Card className="w-1/2">
+      <Card className="w-1/2 glassMorph z-10">
         <CardContent className={cn("p-4 flex flex-col", handPreference === "left" && "rotate-y-180")}>
           <div>
             {opponentMove && (

@@ -118,6 +118,8 @@ export default function PlayPage() {
   };
 
   const handleStartGame = () => {
+    console.log("Starting game...");
+    
     setGameStarted(true);
     setCurrentRound(1);
     setScore({ wins: 0, losses: 0, draws: 0 });
@@ -126,7 +128,7 @@ export default function PlayPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 space-y-4">
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 space-y-4 z-50">
       <h1 className="text-3xl font-bold">Rock paper scissors</h1>
       <p className="text-muted-foreground">
         Playing {totalRounds} round{totalRounds > 1 ? "s" : ""} — Good luck!
@@ -153,9 +155,6 @@ export default function PlayPage() {
         />
       </div>
 
-      <div id="temp">
-        {temp && <Image src={temp} alt="Captured move" width={200} height={200} />}
-      </div>
     </div>
   );
 }
