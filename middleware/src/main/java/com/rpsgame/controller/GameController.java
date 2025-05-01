@@ -1,9 +1,10 @@
 package com.rpsgame.controller;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import com.rpsgame.Model.ImageRequest;
 import com.rpsgame.Model.PlayerSetupRequest;
 import com.rpsgame.Model.PredictResponse;
 import com.rpsgame.Model.ScoreResponse;
@@ -17,7 +18,7 @@ public class GameController {
     private GameService gameService;
 
     @PostMapping("/setup")
-    public String setupPlayer(@RequestBody  PlayerSetupRequest request) {
+    public String setupPlayer(@RequestBody PlayerSetupRequest request) {
         gameService.setupPlayer(request);
         return "Player setup successful!";
     }
@@ -28,14 +29,7 @@ public class GameController {
     }
 
     @PostMapping("/submit")
-    public PredictResponse predict(@RequestBody ImageRequest request)
- {
-        return gameService.predict(request.getImage(), request.getOpponentMove());
+    public PredictResponse predict(@RequestBody Map<String, String> request) {
+        return gameService.predict(request.get("playerMove"), request.get("opponentMove"));
     }
-
-
-
-    
-        
 }
-

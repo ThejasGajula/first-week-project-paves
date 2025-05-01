@@ -23,7 +23,8 @@ export default function PlayPage() {
   const [showFinal, setShowFinal] = useState(false);
   const [temp, setTemp] = useState<string>();
   const [animateHand, setAnimateHand] = useState(false);
-  const [opponent, setOpponent] = useState<"rock"|"paper"|"scissors">("rock");
+  const [opponentMove, setOpponentMove] = useState<"rock"|"paper"|"scissors">("rock");
+  const [playerMove, setPlayerMove] = useState<"rock"|"paper"|"scissors">("rock");
 
   useEffect(() => {
     const name = localStorage.getItem("playerName") ?? "";
@@ -35,9 +36,34 @@ export default function PlayPage() {
     setTotalRounds(rounds);
   }, []);
 
+  async function sendFrameToFlask(base64Image: string): Promise<string> {
+    try {
+      // Convert base64 image (data:image/jpeg;base64,...) to Blob
+      const res = await fetch(base64Image);
+      const blob = await res.blob();
+  
+      // Package as FormData
+      const formData = new FormData();
+      formData.append("image", blob, "frame.jpg");
+  
+      // Send to Flask endpoint
+      const response = await fetch("http://localhost:5000/predict", {
+        method: "POST",
+        body: formData,
+      });
+  
+      const data = await response.json();
+      return data.gesture || "unknown";
+    } catch (err) {
+      console.error("Error sending image to Flask:", err);
+      return "error";
+    }
+  }
+  
+
   const runCountdownAndCapture = async () => {
     await new Promise((r) => setTimeout(r, 10));
-    setOpponent("rock")
+    setOpponentMove("rock")
     setAnimateHand(true);
 
     for (let i = 0; i < phrases.length; i++) {
@@ -54,19 +80,22 @@ export default function PlayPage() {
     if (!imageSrc) return;
     setTemp(imageSrc);
 
-    const randomOpponent = choices[Math.floor(Math.random() * choices.length)] as "rock" | "paper" |"scissors";
-    setOpponent(randomOpponent);
+    const gesture = await sendFrameToFlask(imageSrc) as "rock" | "paper" | "scissors" ;
+    setPlayerMove(gesture);
+
+    const randomOpponentMove = choices[Math.floor(Math.random() * choices.length)] as "rock" | "paper" |"scissors";
+    setOpponentMove(randomOpponentMove);
     setAnimateHand(false);
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-      const response = await fetch(`${apiUrl}/round/submit`, {
+      const response = await fetch(`${apiUrl}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          image: imageSrc,
-          opponentMove: randomOpponent,
+          playerMove: playerMove,
+          opponentMove: randomOpponentMove,
         }),
       });
 
@@ -74,7 +103,8 @@ export default function PlayPage() {
       setResult(data.result); // 'win', 'loss', or 'draw'
       setScore(data.score);   // updated { wins, losses, draws }
 
-      if (data.roundNumber == totalRounds) {
+      if (data.roundNumber >= totalRounds) {
+        setCurrentRound(data.roundNumber)
         setShowFinal(true);
       } else {
         setTimeout(() => {
@@ -107,17 +137,19 @@ export default function PlayPage() {
           webcamRef={webcamRef}
           handPreference={handPreference}
           animateHand={animateHand}
-          opponent={opponent}
+          opponentMove={opponentMove}
+          playerMove={playerMove}
         />
         <ScoreBoard
           gameStarted={gameStarted}
           countdownText={countdownText}
           result={result}
-          opponent={opponent}
+          opponentMove={opponentMove}
           currentRound={currentRound}
           score={score}
           showFinal={showFinal}
           onStartGame={handleStartGame}
+          playerMove={playerMove}
         />
       </div>
 

@@ -6,21 +6,23 @@ interface ScoreBoardProps {
   gameStarted: boolean;
   countdownText: string;
   result: string | null;
-  opponent: string;
+  opponentMove: string;
   currentRound: number;
   score: { wins: number; losses: number; draws: number };
   showFinal: boolean;
   onStartGame: () => void;
+  playerMove: string;
 }
 
 export default function ScoreBoard({
   gameStarted,
   countdownText,
   result,
-  opponent,
+  opponentMove,
   currentRound,
   score,
   showFinal,
+  playerMove,
   onStartGame,
 }: ScoreBoardProps) {
   return (
@@ -30,7 +32,7 @@ export default function ScoreBoard({
           {countdownText && <div className="text-2xl font-semibold">{countdownText}</div>}
           {result && (
             <div className="text-xl font-medium">
-              Round {currentRound} Result: {opponent} —{" "}
+              Round {currentRound} Result: {opponentMove} —{" "} {playerMove}
               <span className="text-primary font-bold">{result}</span>
             </div>
           )}

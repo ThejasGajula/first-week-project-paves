@@ -8,7 +8,6 @@ import com.rpsgame.Model.ScoreResponse;
 
 import lombok.Data;
 
-import java.util.Random;
 
 @Service
 @Data
@@ -21,7 +20,7 @@ public class GameService {
 
     private final String[] moves = {"rock", "paper", "scissors"};
     private PlayerSetupRequest playerProfile;
-    private int currentRound;
+    private int currentRound=0;
 
     public void setupPlayer(PlayerSetupRequest setupRequest) {
         this.playerProfile = setupRequest;
@@ -31,14 +30,11 @@ public class GameService {
         return new ScoreResponse(wins, losses, draws);
     }
 
-    public PredictResponse predict(String image, String opponentMove) {
+    public PredictResponse predict(String playerMove, String opponentMove) {
         
-        // Dummy logic: randomly pick a move (real: should analyze image)
-        String playerMove = moves[new Random().nextInt(moves.length)];
-
         String result = determineResult(playerMove, opponentMove.toLowerCase());
 
-        if (currentRound<this.playerProfile.getRounds()) {
+        if (currentRound<=this.playerProfile.getRounds()) {
             currentRound++;
         }
 

@@ -7,9 +7,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PlayerSetupRequest {
     
-    private String name;
-    private String handPreference; // left / right
-    private Integer rounds;
+    private String name = "Player"; // default name
+    private String handPreference = "right"; // left / right
+    private Integer rounds = 3; // default rounds
 
    
 

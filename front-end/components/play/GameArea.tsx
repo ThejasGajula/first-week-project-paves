@@ -9,7 +9,8 @@ interface GameAreaProps {
   webcamRef: React.RefObject<Webcam | null>;
   handPreference: "left" | "right";
   animateHand: boolean;
-  opponent: string;
+  opponentMove: string;
+  playerMove: string;
 }
 
 const choices = {
@@ -18,7 +19,7 @@ const choices = {
   scissors: "/assets/images/scissors.png",
 };
 
-export default function GameArea({ webcamRef, handPreference, animateHand, opponent }: GameAreaProps) {
+export default function GameArea({ webcamRef, handPreference, animateHand, opponentMove }: GameAreaProps) {
   return (
     <div className={cn("flex gap-10", handPreference === "right" && "flex-row-reverse")}>
       <Card className="w-1/2">
@@ -36,15 +37,15 @@ export default function GameArea({ webcamRef, handPreference, animateHand, oppon
       <Card className="w-1/2">
         <CardContent className={cn("p-4 flex flex-col", handPreference === "left" && "rotate-y-180")}>
           <div>
-            {opponent && (
+            {opponentMove && (
               <Image
-                src={choices[opponent as keyof typeof choices]}
-                alt={`${opponent} image`}
+                src={choices[opponentMove as keyof typeof choices]}
+                alt={`${opponentMove} image`}
                 width={100}
                 height={300}
                 className={cn(
                   "origin-bottom rotate-y-180 rotate-z-270",
-                  animateHand && opponent === "rock" && "animate-swing"
+                  animateHand && opponentMove === "rock" && "animate-swing"
                 )}
               />
             )}
