@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Webcam from "react-webcam";
-import { cn } from "@/lib/utils";
 import Image from "next/image";
 import ScoreBoard from "@/components/play/ScoreBoard";
 import GameArea from "@/components/play/GameArea";
@@ -18,6 +17,7 @@ export default function PlayPage() {
   const [currentRound, setCurrentRound] = useState(1);
   const [score, setScore] = useState({ wins: 0, losses: 0, draws: 0 });
   const [result, setResult] = useState<string | null>(null);
+  const [showResult, setShowResult] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   const [countdownText, setCountdownText] = useState("");
   const [showFinal, setShowFinal] = useState(false);
@@ -59,6 +59,27 @@ export default function PlayPage() {
       return "error";
     }
   }
+
+  async function callBackendRestartGame() {
+    // Call your backend API to restart the game
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/restart`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then(
+        (response) => {
+          if (!response.ok) {
+            throw new Error("Failed to restart game");
+          }
+        })
+      .catch((error) => {
+        console.error("Error restarting game:", error);
+      });
+    
+  
+  }
   
 
   const runCountdownAndCapture = async () => {
@@ -94,13 +115,14 @@ export default function PlayPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          playerMove: playerMove,
+          playerMove: gesture,
           opponentMove: randomOpponentMove,
         }),
       });
 
       const data = await response.json();
       setResult(data.result); // 'win', 'loss', or 'draw'
+      setShowResult(true);
       setScore(data.score);   // updated { wins, losses, draws }
 
       if (data.roundNumber >= totalRounds) {
@@ -109,6 +131,7 @@ export default function PlayPage() {
       } else {
         setTimeout(() => {
           setCurrentRound(data.roundNumber);
+          setShowResult(false);
           runCountdownAndCapture();
         }, 1500);
       }
@@ -118,18 +141,30 @@ export default function PlayPage() {
   };
 
   const handleStartGame = () => {
-    console.log("Starting game...");
-    
+    console.log("Starting game...");  
+    callBackendRestartGame();
     setGameStarted(true);
     setCurrentRound(1);
     setScore({ wins: 0, losses: 0, draws: 0 });
     setShowFinal(false);
+    setShowResult(false);
     runCountdownAndCapture();
   };
 
+
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 space-y-4 z-50">
-      <h1 className="text-3xl font-bold">Rock paper scissors</h1>
+      <div className="flex items-center space-x-2 mb-4 text-3xl text-white font-bold">
+        <Image
+          src="/assets/images/logo.webp"
+          alt="Rock Paper Scissors"
+          width={60}
+          height={60}
+          className="object-cover"
+        />
+        <h1>Rock paper Scissors</h1>
+      </div>
       <p className="text-muted-foreground">
         Playing {totalRounds} round{totalRounds > 1 ? "s" : ""} — Good luck!
       </p>
@@ -141,6 +176,8 @@ export default function PlayPage() {
           animateHand={animateHand}
           opponentMove={opponentMove}
           playerMove={playerMove}
+          score={score}
+          showResult={showResult}
         />
         <ScoreBoard
           gameStarted={gameStarted}
@@ -150,11 +187,17 @@ export default function PlayPage() {
           currentRound={currentRound}
           score={score}
           showFinal={showFinal}
-          onStartGame={handleStartGame}
+          setShowFinal={setShowFinal}
+          handleRestart={handleStartGame}
+          handleStart={handleStartGame}
           playerMove={playerMove}
+          setShowResult={setShowResult}
+          showResult={showResult}
         />
       </div>
 
     </div>
   );
 }
+
+

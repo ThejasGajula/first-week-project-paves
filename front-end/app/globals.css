@@ -43,7 +43,7 @@
   --radius-xl: calc(var(--radius) + 4px);
 
   --color-dark-1 : #3aff2a;
-  --animate-swing : swing 0.6s ease-out 4 ;
+  --animate-swing : swing 0.6s ease-out 3 ;
 
   --animate-first: moveVertical 30s ease infinite;
   --animate-second: moveInCircle 20s reverse infinite;
@@ -187,6 +187,15 @@
 box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
 backdrop-filter: blur( 7.5px );
 -webkit-backdrop-filter: blur( 7.5px );
+border-radius: 10px;
+border: 1px solid rgba( 255, 255, 255, 0.18 );
+}
+
+.glassMorph-dark{
+  background: rgba( 255, 255, 255, 0.5 );
+box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+backdrop-filter: blur( 20px );
+-webkit-backdrop-filter: blur( 20px );
 border-radius: 10px;
 border: 1px solid rgba( 255, 255, 255, 0.18 );
 }
