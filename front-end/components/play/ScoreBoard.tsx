@@ -3,6 +3,9 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { DialogHeader } from "../ui/dialog";
+import { Confetti } from "../magicui/confetti";
+import { useEffect } from "react";
+import confetti from "canvas-confetti";
 
 interface ScoreBoardProps {
   gameStarted: boolean;
@@ -35,6 +38,18 @@ export default function ScoreBoard({
   handleRestart,
   setShowFinal,
 }: ScoreBoardProps) {
+
+  useEffect(()=>{
+    if(showFinal){
+      confetti({
+        particleCount: 200,
+        spread: 70,
+        origin: { y: 0.6 }
+
+      });
+    }
+  },[showFinal])
+
   return (
     <div className="w-full flex mt-10 flex-col items-center">
       {gameStarted ? (
@@ -62,7 +77,7 @@ export default function ScoreBoard({
                 <p>Losses: {score.losses}</p>
                 <p>Draws: {score.draws}</p>
                 {score.wins > score.losses ? (
-                  <p className="text-green-500 font-bold text-2xl">You Win! 🎉
+                  <p className="text-blue font-extrabold text-2xl">You Win! 🎉
                   </p>
                 ) : score.wins < score.losses ? (
                   <p className="text-red-500 font-bold text-2xl">You Lose!
@@ -78,6 +93,7 @@ export default function ScoreBoard({
                   Play Again
                 </Button>
               </div>
+
             </DialogHeader>
           </DialogContent>
         </Dialog>
