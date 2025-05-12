@@ -5,7 +5,6 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import com.rpsgame.Model.PlayerSetupRequest;
 import com.rpsgame.Model.PredictResponse;
 import com.rpsgame.Model.ScoreResponse;
