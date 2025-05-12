@@ -43,6 +43,7 @@
   --radius-xl: calc(var(--radius) + 4px);
 
   --color-dark-1 : #3aff2a;
+  --color-blue : #3f0596;
   --animate-swing : swing 0.6s ease-out 3 ;
 
   --animate-first: moveVertical 30s ease infinite;
