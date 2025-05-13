@@ -1,7 +1,11 @@
 package com.rpsgame.Service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.stereotype.Service;
 
+import com.rpsgame.Model.Player;
 import com.rpsgame.Model.PlayerSetupRequest;
 import com.rpsgame.Model.PredictResponse;
 import com.rpsgame.Model.ScoreResponse;
@@ -21,6 +25,8 @@ public class GameService {
     private final String[] moves = {"rock", "paper", "scissors"};
     private PlayerSetupRequest playerProfile;
     private int currentRound=0;
+
+    private final Map<String, Player> players = new HashMap<>();
 
     public void setupPlayer(PlayerSetupRequest setupRequest) {
         this.playerProfile = setupRequest;
@@ -79,5 +85,22 @@ public class GameService {
         this.losses = 0;
         this.draws = 0;
         this.currentRound = 0;
+      players.values().forEach(player -> player.setReady(false));
     }
+ public Player togglePlayerReady(String playerId) {
+        Player player = players.get(playerId);
+        if (player != null) {
+            player.toggleReady();
+        }
+        return player; 
+    }
+    public Map<String, Player> getAllPlayers() {
+        return players;
+    }
+   
+    
+
+
+
+
 }

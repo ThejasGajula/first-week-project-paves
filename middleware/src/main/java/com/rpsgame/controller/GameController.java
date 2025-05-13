@@ -6,12 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.rpsgame.Model.Player;
 import com.rpsgame.Model.PlayerSetupRequest;
 import com.rpsgame.Model.PredictResponse;
 import com.rpsgame.Model.ScoreResponse;
 import com.rpsgame.Service.GameService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 
 @RestController
@@ -42,5 +41,12 @@ public class GameController {
         gameService.restartGame();
         return ResponseEntity.ok("Game restarted successfully!");
     }
-    
+    @PostMapping("/room/ready")
+    public void toggleReadiness(@RequestBody Map<String, String> request) {
+        String playerId = request.get("playerId");
+        Player updatedPlayer = gameService.togglePlayerReady(playerId);
+
+        // Broadcast updated readiness states
+        messagingTemplate.convertAndSend("/topic/room/readiness", gameService.getAllPlayers());
+    }
 }
