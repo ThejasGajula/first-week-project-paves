@@ -4,18 +4,31 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.*;
+
+import com.rpsgame.Model.GameResult;
+import com.rpsgame.Model.GameRoom;
+import com.rpsgame.Model.GestureRequest;
 import com.rpsgame.Model.PlayerSetupRequest;
 import com.rpsgame.Model.PredictResponse;
 import com.rpsgame.Model.ScoreResponse;
 import com.rpsgame.Service.GameService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
+import com.rpsgame.Service.MatchmakingService;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 @RestController
 @RequestMapping("/api")
 public class GameController {
+
+     private final MatchmakingService matchmakingService;
+     private final SimpMessagingTemplate messagingTemplate;
+
+    public GameController(SimpMessagingTemplate messagingTemplate,MatchmakingService matchmakingService) {
+        this.matchmakingService = matchmakingService;
+        this.messagingTemplate = messagingTemplate;
+    }
+
 
     @Autowired
     private GameService gameService;
@@ -41,5 +54,40 @@ public class GameController {
         gameService.restartGame();
         return ResponseEntity.ok("Game restarted successfully!");
     }
+    
+@MessageMapping("/ready")
+public void handleReady(@Header("simpSessionId") String sessionId) {
+    String roomId = matchmakingService.getRoomId(sessionId);
+    GameRoom room = matchmakingService.getRoom(roomId);
+    if (room == null) return;
+
+    room.markReady(sessionId);
+    if (room.allReady()) {
+        messagingTemplate.convertAndSend("/topic/room/" + roomId, "Both players are ready. Submit your move!");
+    }
+}
+
+@MessageMapping("/move")
+public void handleMove(@Payload GestureRequest gestureRequest,
+                       @Header("simpSessionId") String sessionId) {
+
+    String roomId = matchmakingService.getRoomId(sessionId);
+    GameRoom room = matchmakingService.getRoom(roomId);
+    if (room == null) return;
+
+    room.submitMove(sessionId, gestureRequest.getMove());
+
+    if (room.allMovesSubmitted()) {
+        room.computeResult();
+        GameResult result = new GameResult(
+            room.getWinnerName(),
+            room.getPlayerNames(),
+            room.getWinnerName().equals("Draw") ? "It's a draw!" : room.getWinnerName() + " wins!"
+        );
+        messagingTemplate.convertAndSend("/topic/room/" + roomId, result);
+        room.reset(); // Optional: reset for next round
+    }
+}
+
     
 }
