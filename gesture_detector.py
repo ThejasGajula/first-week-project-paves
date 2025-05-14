@@ -1,6 +1,7 @@
-import cv2
-import mediapipe as mp
+import cv2 
+import mediapipe as mp 
 import math
+
 
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.1)
@@ -50,8 +51,6 @@ def classify_gesture(landmarks):
         return "paper"
     else:
         return "unknown"
-
-
 if __name__ == "__main__":
     cap = cv2.VideoCapture(0)
 
@@ -69,13 +68,11 @@ if __name__ == "__main__":
             for hand_landmarks in result.multi_hand_landmarks:
                 mp_draw.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
                 gesture = classify_gesture(hand_landmarks.landmark)
-
         cv2.putText(frame, f"Gesture: {gesture}", (10, 50), cv2.FONT_HERSHEY_SIMPLEX,
                     1, (0, 255, 0), 2)
-
         cv2.imshow("RPS with Distances", frame)
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
-
+        
     cap.release()
     cv2.destroyAllWindows()

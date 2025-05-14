@@ -23,6 +23,7 @@ const choices = {
 
 export default function GameArea({ webcamRef, handPreference, animateHand, opponentMove ,score,showResult ,playerMove}: GameAreaProps) {
   return (
+    
     <div className={cn("flex gap-10", handPreference === "right" && "flex-row-reverse")}>
       <Card className="w-1/2 glassMorph z-10">
         <CardContent className=" flex flex-col items-center space-y-4 relative">
@@ -33,7 +34,7 @@ export default function GameArea({ webcamRef, handPreference, animateHand, oppon
             videoConstraints={{ facingMode: "user" }}
             mirrored
           />
-          {score.wins > 0 && (
+          {(score.wins > 0 || score.losses > 0) && (
             <div className="absolute top-2 left-2 bg-green-500 text-white rounded px-2 py-1 text-sm">
               Wins: {score.wins}
               </div>
@@ -63,7 +64,7 @@ export default function GameArea({ webcamRef, handPreference, animateHand, oppon
               />
             )}
           </div>
-          {score.wins > 0 && (
+          {(score.wins > 0 || score.losses > 0) && (
             <div className="absolute top-2 right-2 bg-red-500 text-white rounded px-2 py-1 text-sm">
               Wins: {score.losses}
               </div>
