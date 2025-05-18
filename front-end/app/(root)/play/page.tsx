@@ -47,7 +47,7 @@ export default function PlayPage() {
       formData.append("image", blob, "frame.jpg");
   
       // Send to Flask endpoint
-      const response = await fetch("http://localhost:5000/predict", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_GESTURE_API_URL}/predict`, {
         method: "POST",
         body: formData,
       });
